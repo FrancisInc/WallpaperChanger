@@ -26,7 +26,7 @@ namespace WallpaperChanger
         
         static IntPtr handle = GetConsoleWindow();
 
-        static string savePath = @"C:\Users\livid\Downloads\Sheet Music\wp.jpg";
+        static string savePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\wp.jpg";
         
         static HtmlAgilityPack.HtmlDocument htmlDocument = new HtmlAgilityPack.HtmlDocument();
 
@@ -34,11 +34,13 @@ namespace WallpaperChanger
 
         static List<string> imageWallHref = new List<string>();
 
+        //Delay between changing wallpapers (unstable below 1 second)
+        static int ChangeDelay = 25;
+
         [STAThread]
         static void Main(string[] args)
         {
             ShowWindow(handle, 0);
-            htmlDocument = new HtmlWeb().Load(@"https://www.hdwallpapers.in/latest_wallpapers/page/" + new Random().Next(1, 1238) + @"/");
             
             for (;;)
             {
@@ -48,7 +50,7 @@ namespace WallpaperChanger
                     new WebClient().DownloadFile(@"https://www.hdwallpapers.in/" + hrefList[new Random().Next(0, hrefList.Count - 1)], savePath);
                     Thread.Sleep(100);
                     SetWallpaper();
-                    Thread.Sleep(25000);
+                    Thread.Sleep(ChangeDelay * 1000);
                     File.Delete(savePath);
                 }
                 catch (Exception) { }
@@ -59,6 +61,8 @@ namespace WallpaperChanger
 
         static void GenerateImageWallList()
         {
+            htmlDocument = new HtmlWeb().Load(@"https://www.hdwallpapers.in/latest_wallpapers/page/" + new Random().Next(1, 1238) + @"/");
+
             var selectedClassNodes = htmlDocument.DocumentNode.SelectNodes("//div[@class]");
             for (int i = 0; i < selectedClassNodes.Count; i++)
             {
